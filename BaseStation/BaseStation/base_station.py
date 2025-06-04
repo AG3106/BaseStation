@@ -27,7 +27,7 @@ class BaseStationLogic:
             self.handle_refbox_message,
             self.handle_refbox_disconnect
         )
-        # self.refbox_messages = [] # store all messages from RefBox here (UI logs them)
+        # self.refbox_messages = [] # store all messages from RefBox here (UI logs them)0
 
     def connect_to_robots(self):
         self.overall_robot_connection_active = True # Flag that we've attempted to connect
@@ -113,6 +113,66 @@ class BaseStationLogic:
 class ROSBaseStation(Node):
     def __init__(self, robots, opponents, ball_pos):
         super().__init__('ROSBaseStation')
+        self.robots = []
+        self.opponents = []
+        self.publ = {}
+        self.tim = {}
+        # Create 5 publishers
+        for robot in robots:
+            robot.position = [float(x) for x in robot.position]  # Convert to float
+            self.robots.append(robot)
+        for opponent in opponents:
+            opponent.position = [float(x) for x in opponent.position]  # Convert to float
+            self.robots.append(opponent)
+        for i in range(0, 5):  
+            self.publ[f'o{i+1}'] = self.create_publisher(
+                Float32MultiArray,
+                f'o{i+1}_data',
+                10
+            )
+            self.tim[f'o{i+1}'] = self.create_timer(
+                0.01,
+                lambda robot_index=i-1, pub_name=f'o{i+1}': self.publish_robot(robot_index, pub_name)
+            )
+        for i in range(0, 5):  
+            self.publ[f'e{i+1}'] = self.create_publisher(
+                Float32MultiArray,
+                f'e{i+1}_data',
+                10
+            )
+            self.tim[f'e{i+1}'] = self.create_timer(
+                0.01,
+                lambda robot_index=i-1, pub_name=f'e{i+1}': self.publish_robot(robot_index, pub_name)
+            )
+    def publish_robot(self, robot_index, publisher_name):
+        if robot_index < len(self.robots):
+            robot_pos = self.robots[robot_index].position.copy()
+            print(robot_pos)
+            robot_pos.append(0.0)
+            msg = Float32MultiArray()
+            msg.layout.dim.append(MultiArrayDimension())
+            msg.layout.dim[0].label = f"{publisher_name}_data"
+            msg.layout.dim[0].size = len(robot_pos)
+            msg.layout.dim[0].stride = len(robot_pos)
+            msg.layout.data_offset = 0
+            msg.data = robot_pos
+            self.publ[publisher_name].publish(msg)
+            self.get_logger().info(f'Published {publisher_name}')
+
+    def publish_opponent(self, opponent_index, publisher_name):
+        if opponent_index< len(self.opponents):
+            opponent_pos = self.opponents[opponent_index].position.copy()
+            opponent_pos.append(0.0)
+            msg = Float32MultiArray()
+            msg.layout.dim.append(MultiArrayDimension())
+            msg.layout.dim[0].label = f"{publisher_name}_data"
+            msg.layout.dim[0].size = len(opponent_pos)
+            msg.layout.dim[0].stride = len(opponent_pos)
+            msg.layout.data_offset = 0
+            msg.data = opponent_pos
+            self.publ[publisher_name].publish(msg)
+            self.get_logger().info(f'Published {publisher_name}')
+        
 
 
 # Main execution part remains similar but ensure logic is passed to UI
