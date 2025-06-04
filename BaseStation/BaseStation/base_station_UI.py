@@ -59,10 +59,8 @@ class BaseStationUI:
                 initial_pos=r_conf.get('initial_pos', [1 + r_idx, 1]),
                 initial_orient=r_conf.get('initial_orient', 0)
             ))
-        
         if not self.robots:
              self.robots = [Robot(i + 1, "Player", "blue", initial_pos=(1+i,1), initial_orient=0) for i in range(5)]
-
         # OPPONENT ROBOTS
         self.opponents = []
         for idx, o_conf in enumerate(self.config.get('opponents', [])):
@@ -103,12 +101,12 @@ class BaseStationUI:
         
         center_logo_frame = tk.Frame(banner_frame, bg="#a8328d")
         center_logo_frame.pack(side=tk.LEFT, expand=True)
-        msl_logo_label = load_logo("era_logo.png", (80,80), center_logo_frame, "MSL")
+        msl_logo_label = load_logo("era_logo.png", (80, 80), center_logo_frame, "MSL")
         msl_logo_label.pack()
         
         right_frame = tk.Frame(banner_frame, bg="#a8328d")
         right_frame.pack(side=tk.RIGHT, padx=10)
-        institute_logo_label = load_logo("iitk_logo.png", (60,60), right_frame, "IITK")
+        institute_logo_label = load_logo("iitk_logo.png", (60, 60), right_frame, "IITK")
         institute_logo_label.pack(side=tk.RIGHT, padx=5)
 
         self.refbox_status_label = tk.Label(right_frame, text="RefBox: Disconnected", fg="red", bg="#a8328d", font=("Arial", 10, "bold"))
