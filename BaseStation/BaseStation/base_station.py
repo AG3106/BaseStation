@@ -110,6 +110,10 @@ class BaseStationLogic:
     # parse_message seems unused or was a placeholder
     # def parse_message(self, message):
     #     print(message)
+class ROSBaseStation(Node):
+    def __init__(self, robots, opponents, ball_pos):
+        super().__init__('ROSBaseStation')
+
 
 # Main execution part remains similar but ensure logic is passed to UI
 def main():
@@ -127,8 +131,16 @@ def main():
     # logic.connect_to_refbox() # Optionally auto-connect to refbox on startup
 
     # Start the periodic update loop
-    logic.update_world_state_and_ui() 
-    
+    logic.update_world_state_and_ui()
+    rclpy.init(args=None)
+    ros_bs = ROSBaseStation(logic.robots, logic.opponents, logic.global_world.ball_position)
+    try:
+        rclpy.spin(ros_bs)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        ros_bs.destroy_node()
+        rclpy.shutdown()
     root.mainloop()
 
     # Cleanup on exit
